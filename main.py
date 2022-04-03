@@ -48,8 +48,7 @@ class MyClient(Bot):
         self.discord_channel_id=int(config.get('DISCORD','CHANNEL_ID'))   
         self.OS_COLLECTION_NAME=config.get("OPENSEA","COLLECTION_NAME")
         self.OS_API_KEY=config.get("OPENSEA","API_KEY")
-        self.last_sale_timestamp="2021-09-17T00:00:00Z"
-        self.lookup_offset=0
+        self.last_sale_timestamp="2022-03-31T00:00:00Z"
         self.show_hodler_status = True
 
         # start the task to run in the background
@@ -67,7 +66,7 @@ class MyClient(Bot):
         try:
             if(self.IS_START_UP == False):
                 logging.info("Sales activity check started.")
-                events_url = "https://api.opensea.io/api/v1/events?only_opensea=false&offset=" + str(self.lookup_offset) + "&limit=10&asset_contract_address=" + str(self.CONTRACT_ADDRESS) + "&event_type=successful&occurred_after=" + str(self.last_sale_timestamp)
+                events_url = "https://api.opensea.io/api/v1/events?only_opensea=false&asset_contract_address=" + str(self.CONTRACT_ADDRESS) + "&event_type=successful&occurred_after=" + str(self.last_sale_timestamp)
                 #print (events_url)
                 events_response = requests.get(events_url, headers=headers)
                 json_data = events_response.json()
@@ -101,7 +100,7 @@ class MyClient(Bot):
                     parsed_time=parser.parse(self.last_sale_timestamp)
                     added_seconds = datetime.timedelta(0, 1)
                     self.last_sale_timestamp = ((parsed_time + added_seconds).isoformat())[:19] + "Z"
-                                    # Format the discord post.
+                    # Format the discord post.
                     embed=Embed(title=asset_name, type="rich",url="https://opensea.io/assets/" + str(self.CONTRACT_ADDRESS) + "/" + str(token_id), color = Color.green(), description="has just been sold for " + str(formatted_value) + " \n")
                     embed.set_thumbnail(url=image_url)  
                     embed.add_field(name="**From**", value="[" + str(seller_name) + "](https://opensea.io/" + str(seller_address) + ")", inline="true")
@@ -117,7 +116,7 @@ class MyClient(Bot):
             # This is the first run. Get the last sale timestamp
             logging.info("This is the first run. Get the last sale timestamp.")
             self.IS_START_UP = False
-            data_url = "https://api.opensea.io/api/v1/events?only_opensea=false&offset=0&limit=1&asset_contract_address=" + str(self.CONTRACT_ADDRESS) + "&event_type=successful"
+            data_url = "https://api.opensea.io/api/v1/events?only_opensea=false&asset_contract_address=" + str(self.CONTRACT_ADDRESS) + "&event_type=successful&occurred_after=" + str(self.last_sale_timestamp)
             startup_response = requests.get(data_url,headers=headers)
             startup_data = startup_response.json()
             self.last_sale_timestamp=startup_data["asset_events"][0].get("transaction").get("timestamp")
